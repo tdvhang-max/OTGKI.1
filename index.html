@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Học Tập - Công Nghệ Sinh 10</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdf2f8; /* pink-50 */
+        }
+        /* Custom scrollbar for tables */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #fbcfe8; /* pink-200 */
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #fff5f8;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        table, th, td {
+            border: 1px solid #f9a8d4; /* pink-300 */
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #fce7f3; /* pink-100 */
+            font-weight: 600;
+        }
+        
+        .question-card {
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(244, 114, 182, 0.2), 0 4px 6px -2px rgba(244, 114, 182, 0.1);
+        }
+
+        .option-label {
+            transition: all 0.2s ease;
+        }
+        
+        /* Checkbox/Radio animations */
+        input[type="radio"]:checked + div {
+            background-color: #fbcfe8; /* pink-200 */
+            border-color: #f472b6; /* pink-400 */
+            color: #831843; /* pink-900 */
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased py-8 px-4 sm:px-6 lg:px-8">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Header -->
+        <div class="bg-white rounded-3xl shadow-sm border border-pink-100 p-6 sm:p-10 mb-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-300 via-pink-400 to-pink-300"></div>
+            <h2 class="text-pink-500 font-semibold tracking-wider text-sm uppercase mb-2">Trường THPT Hùng Vương</h2>
+            <h1 class="text-2xl sm:text-3xl font-bold text-pink-700 mb-6">PHIẾU HỌC TẬP ÔN TẬP GIỮA KÌ 1</h1>
+            <h3 class="text-lg font-medium text-gray-600 mb-8">Môn: Công nghệ nông nghiệp - Khối 10</h3>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4 max-w-2xl mx-auto">
+                <input type="text" id="studentName" placeholder="Họ và tên học sinh..." class="flex-1 bg-pink-50 border border-pink-200 text-gray-700 text-sm rounded-xl focus:ring-pink-400 focus:border-pink-400 block w-full p-3 outline-none transition-shadow">
+                <input type="text" id="studentClass" placeholder="Lớp..." class="w-full sm:w-32 bg-pink-50 border border-pink-200 text-gray-700 text-sm rounded-xl focus:ring-pink-400 focus:border-pink-400 block p-3 outline-none transition-shadow">
+            </div>
+        </div>
+
+        <div id="quiz-container">
+            <!-- Phần I: Trắc nghiệm -->
+            <div class="mb-4 ml-2">
+                <h2 class="text-xl font-bold text-pink-700">PHẦN I. CÂU TRẮC NGHIỆM NHIỀU PHƯƠNG ÁN LỰA CHỌN</h2>
+                <p class="text-sm text-gray-500 mt-1">Mỗi câu hỏi chỉ chọn một phương án đúng nhất.</p>
+            </div>
+            <div id="mcq-section" class="space-y-6 mb-10">
+                <!-- MCQ questions will be injected here -->
+            </div>
+
+            <!-- Phần II: Đúng Sai -->
+            <div class="mb-4 ml-2 mt-12">
+                <h2 class="text-xl font-bold text-pink-700">PHẦN II. CÂU TRẮC NGHIỆM ĐÚNG SAI</h2>
+                <p class="text-sm text-gray-500 mt-1">Trong mỗi ý a), b), c), d) ở mỗi câu, chọn Đúng hoặc Sai.</p>
+            </div>
+            <div id="tf-section" class="space-y-6 mb-10">
+                <!-- TF questions will be injected here -->
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bg-white rounded-3xl shadow-sm border border-pink-100 p-6 sticky bottom-4 z-10">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div id="score-display" class="hidden text-lg font-bold text-pink-700 bg-pink-100 px-6 py-3 rounded-xl w-full sm:w-auto text-center">
+                    Điểm của bạn: <span id="score-value" class="text-2xl">0/10</span>
+                </div>
+                <div class="flex gap-4 w-full sm:w-auto">
+                    <button onclick="resetQuiz()" class="flex-1 sm:flex-none px-6 py-3 bg-pink-50 text-pink-600 font-semibold rounded-xl border border-pink-200 hover:bg-pink-100 transition-colors">
+                        Làm lại
+                    </button>
+                    <button id="submit-btn" onclick="submitQuiz()" class="flex-1 sm:flex-none px-8 py-3 bg-pink-500 text-white font-semibold rounded-xl shadow-md shadow-pink-200 hover:bg-pink-600 transition-colors">
+                        Nộp bài
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Ngân hàng câu hỏi trắc nghiệm (24 câu)
+        const mcqBank = [
+            {
+                id: 1,
+                content: "Các sản phẩm trồng trọt trong hình bên thể hiện vai trò nào sau đây của trồng trọt?",
+                media: `<img src="cau-1.png" alt="Ảnh minh họa lúa, ngô, khoai, sắn" class="rounded-xl w-full max-w-md mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: ["A. Cung cấp nguồn dược liệu quý.", "B. Tạo việc làm cho người lao động.", "C. Mang lại cảnh quan xanh, sạch, đẹp.", "D. Đảm bảo an ninh lương thực."],
+                answer: 3 // D (index 3)
+            },
+            {
+                id: 2,
+                content: "Việc chia cây trồng thành cây rau, cây hoa, cây lấy gỗ là cách phân loại dựa vào",
+                options: ["A. nguồn gốc phát sinh.", "B. đặc tính sinh vật học.", "C. mục đích sử dụng.", "D. vùng khí hậu trồng trọt."],
+                answer: 2 // C
+            },
+            {
+                id: 3,
+                content: "Công nghệ tưới nào sau đây được áp dụng trong hình bên?",
+                media: `<img src="cau-3.png" alt="Tưới nhỏ giọt" class="rounded-xl w-full max-w-md mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: ["A. Tưới phun mưa.", "B. Tưới phun sương.", "C. Tưới tràn.", "D. Tưới nhỏ giọt."],
+                answer: 3 // D
+            },
+            {
+                id: 4,
+                content: "Yêu cầu nào sau đây không phải là yêu cầu cơ bản đối với người lao động trong trồng trọt?",
+                options: ["A. Tuân thủ an toàn lao động, bảo vệ môi trường.", "B. Có năng lực thiết kế, chế tạo máy móc nông nghiệp.", "C. Có sức khoẻ tốt, chăm chỉ, chịu khó, trách nhiệm cao.", "D. Có kiến thức, kĩ năng cơ bản về trồng trọt."],
+                answer: 1 // B
+            },
+            {
+                id: 5,
+                content: "Thành phần chủ yếu của đất trồng là",
+                options: ["A. sinh vật đất.", "B. phần lỏng.", "C. phần khí.", "D. phần rắn."],
+                answer: 3 // D
+            },
+            {
+                id: 6,
+                content: "Lớp điện bù của keo đất mang điện",
+                options: ["A. cùng dấu với các ion trong dung dịch đất.", "B. trung hoà, không mang điện tích.", "C. trái dấu với tầng ion quyết định điện.", "D. cùng dấu với tầng ion quyết định điện."],
+                answer: 2 // C
+            },
+            {
+                id: 7,
+                content: "Đặc điểm nào sau đây là của đất bạc màu?",
+                options: ["A. Giàu chất dinh dưỡng.", "B. Có phản ứng kiềm.", "C. Nồng độ muối hoà tan cao.", "D. Tầng canh tác mỏng."],
+                answer: 3 // D
+            },
+            {
+                id: 8,
+                content: "Nhóm dụng cụ nào sau đây được chuẩn bị cho bài thực hành xác định độ mặn của đất?",
+                options: ["A. Bình định mức, cối chày sứ, giấy quỳ tím, đĩa petri.", "B. Pipet, buret, cốc sứ, đĩa petri.", "C. Bình tam giác, ống đong, phễu, giấy lọc.", "D. Ống nghiệm, đèn cồn, kẹp gỗ, giấy quỳ tím."],
+                answer: 2 // C
+            },
+            {
+                id: 9,
+                content: "Cây trồng bằng giá thể khoẻ, sinh trưởng và phát triển tốt, sạch bệnh là do giá thể đã được",
+                options: ["A. trộn sẵn thuốc trừ sâu hoá học liều cao.", "B. nung chảy hoàn toàn rồi ép thành khối đặc.", "C. xử lí, phối trộn với các chất dinh dưỡng cân đối.", "D. nén chặt để rễ cây không bị lay động."],
+                answer: 2 // C
+            },
+            {
+                id: 10,
+                content: "Giá thể gốm có ưu điểm hạn chế được",
+                options: ["A. sự thông thoáng của vùng rễ.", "B. tình trạng khô nhanh sau khi tưới.", "C. sâu, bệnh và cỏ dại.", "D. khả năng giữ chất dinh dưỡng."],
+                answer: 2 // C
+            },
+            {
+                id: 11,
+                content: "Quá trình sản xuất phân bón hoá học có sử dụng",
+                options: ["A. tàn dư thực vật được vùi trực tiếp vào đất.", "B. một số nguyên liệu tự nhiên hoặc tổng hợp.", "C. chất thải chăn nuôi đã được ủ hoai mục.", "D. các chủng vi sinh vật sống có ích."],
+                answer: 1 // B
+            },
+            {
+                id: 12,
+                content: "Hình bên là một mẫu phân bón hoá học. Mẫu phân này thuộc loại nào sau đây?",
+                media: `<img src="cau-12.png" alt="Phân bón đạm urê" class="rounded-xl w-full max-w-sm mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: ["A. Phân lân.", "B. Phân hỗn hợp NPK.", "C. Phân đạm.", "D. Phân kali."],
+                answer: 2 // C
+            },
+            {
+                id: 13,
+                content: "Một giống cây ăn quả được trồng thử ở hai vùng: ở vùng nóng quanh năm, cây sinh trưởng thân lá bình thường như các cây nhiệt đới nhưng không ra hoa; ở vùng có mùa đông lạnh, mùa hè nóng ẩm, cây ra hoa, đậu quả bình thường. Căn cứ vào nguồn gốc, giống cây này được xếp vào nhóm nào sau đây?",
+                options: ["A. Nhóm cây ôn đới.", "B. Nhóm cây nhiệt đới.", "C. Nhóm cây hàn đới.", "D. Nhóm cây á nhiệt đới."],
+                answer: 3 // D
+            },
+            {
+                id: 14,
+                content: "Nhóm cây nào sau đây gồm toàn cây lương thực?",
+                options: ["A. Ngô, hoa hồng, hoa cúc, sắn.", "B. Lúa, cam, bưởi, ngô.", "C. Khoai lang, keo, bạch đàn, lúa.", "D. Lúa, ngô, khoai lang, sắn."],
+                answer: 3 // D
+            },
+            {
+                id: 15,
+                content: "Ở vùng ven biển thường nhiễm mặn đầu vụ, trên cùng một cánh đồng, giống lúa chịu mặn vẫn cho năng suất khá, còn giống lúa thường bị giảm năng suất mạnh. Ví dụ này thể hiện vai trò nào sau đây của giống cây trồng?",
+                options: ["A. Quy định thời điểm nước mặn xâm nhập vào ruộng.", "B. Quy định độ mặn của đất và nguồn nước tưới.", "C. Quy định khả năng chống chịu điều kiện bất lợi.", "D. Quy định thời gian sinh trưởng của cây lúa."],
+                answer: 2 // C
+            },
+            {
+                id: 16,
+                content: "Nồng độ OH⁻ trong dung dịch của một đất trung tính tăng lên và lớn hơn nồng độ H⁺. Dự đoán nào sau đây về phản ứng của đất đúng?",
+                options: ["A. Vẫn giữ phản ứng trung tính.", "B. Không còn phản ứng của dung dịch đất.", "C. Chuyển sang phản ứng chua.", "D. Chuyển sang phản ứng kiềm."],
+                answer: 3 // D
+            },
+            {
+                id: 17,
+                content: "Khi điều tra đất nông nghiệp ở một vùng, các nhà khoa học đo pH trong dung dịch KCl ở ba tầng đất theo chiều sâu phẫu diện. Giá trị trung bình theo loại đất thu được như bảng dưới đây:<br>Nhận định nào sau đây đúng?",
+                media: `<div class="table-container overflow-x-auto"><table class="min-w-full">
+                    <thead><tr><th>Loại đất</th><th>Tầng 1</th><th>Tầng 2</th><th>Tầng 3</th></tr></thead>
+                    <tbody>
+                        <tr><td>Đất mùn vàng đỏ trên núi</td><td>3,85</td><td>3,54</td><td>3,11</td></tr>
+                        <tr><td>Đất đỏ vàng biến đổi do trồng lúa nước</td><td>4,15</td><td>4,04</td><td>3,94</td></tr>
+                        <tr><td>Đất vàng nhạt trên đá cát</td><td>3,37</td><td>3,64</td><td>3,21</td></tr>
+                        <tr><td>Đất xám glây</td><td>3,85</td><td>3,78</td><td>3,76</td></tr>
+                        <tr><td>Đất phù sa không được bồi chua</td><td>4,76</td><td>4,76</td><td>4,78</td></tr>
+                        <tr><td>Đất phèn hoạt động</td><td>4,48</td><td>3,62</td><td>3,45</td></tr>
+                    </tbody>
+                </table></div>`,
+                options: [
+                    "A. Theo thang pH, cả 18 giá trị pH trung bình đều ứng với đất chua.", 
+                    "B. Theo thang pH, đất phù sa không được bồi chua thuộc nhóm đất trung tính.", 
+                    "C. Đất phèn hoạt động có pH tầng 1 cao hơn đất phù sa không được bồi chua.", 
+                    "D. Ở mọi loại đất trong bảng, pH giảm dần từ tầng 1 xuống tầng 3."
+                ],
+                answer: 0 // A
+            },
+            {
+                id: 18,
+                content: "Khi nghiên cứu đất liếp trồng chuyên ca cao và ca cao xen dừa, các nhà khoa học đo pH của từng tầng đất trong nước và trong dung dịch KCl (đất : dung dịch = 1 : 5). Biết dung dịch KCl chứa các ion K⁺, Cl⁻; pH càng thấp thì nồng độ H⁺ trong dung dịch càng lớn. Nhận định nào sau đây giải thích đúng sự chênh lệch pH giữa hai cách đo trên biểu đồ?",
+                media: `<img src="cau-18.png" alt="Biểu đồ pH" class="rounded-xl w-full max-w-lg mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: [
+                    "A. Ion K⁺ đổi chỗ với ion H⁺ ở lớp điện bù của keo âm.",
+                    "B. Ion K⁺ đổi chỗ với ion H⁺ ở tầng ion quyết định điện của keo âm.",
+                    "C. Ion Cl⁻ đổi chỗ với ion OH⁻ ở tầng ion quyết định điện của keo dương.",
+                    "D. Ion Cl⁻ đổi chỗ với ion H⁺ ở lớp điện bù của keo dương."
+                ],
+                answer: 0 // A
+            },
+            {
+                id: 19,
+                content: "Vì sao để đất trống vào mùa mưa làm cho đất trở nên nghèo dinh dưỡng?",
+                options: [
+                    "A. Đất trống giúp vi sinh vật cố định thêm nhiều đạm cho đất.",
+                    "B. Không có lớp che phủ, nước mưa rửa trôi chất dinh dưỡng.",
+                    "C. Nước mưa mang thêm nhiều muối hoà tan vào tầng đất mặt.",
+                    "D. Đất trống giữ lại được toàn bộ cation kiềm trong đất."
+                ],
+                answer: 1 // B
+            },
+            {
+                id: 20,
+                content: "Một loại giá thể hữu cơ màu đen, sạch, tơi xốp; cây con trồng trên đó cứng cáp, chịu rét tốt nhưng vào những ngày nắng gắt thì bộ rễ dễ bị nóng. Đó là giá thể nào sau đây?",
+                options: ["A. Giá thể xơ dừa.", "B. Giá thể mùn cưa.", "C. Giá thể trấu hun.", "D. Giá thể than bùn."],
+                answer: 2 // C
+            },
+            {
+                id: 21,
+                content: "Ở vùng có nguy cơ hạn, mặn cuối vụ, lúa vụ Đông Xuân cần được bố trí để né mặn. Ngoài xuống giống sớm, người trồng kết hợp biện pháp nào sau đây?",
+                options: [
+                    "A. Dùng giống lúa ngắn ngày, chịu mặn.",
+                    "B. Gieo sạ vào cuối khung thời vụ.",
+                    "C. Dùng giống lúa dài ngày.",
+                    "D. Gieo sạ khi độ mặn còn cao."
+                ],
+                answer: 0 // A
+            },
+            {
+                id: 22,
+                content: "Khi nghiên cứu ảnh hưởng của khoảng cách giữa hai lần tưới đến tỉ lệ nứt quả của chôm chôm Rongrien 6 năm tuổi... Dựa vào kết quả trên biểu đồ, để tỉ lệ nứt quả thấp nhất, nên chọn cách làm nào sau đây?",
+                media: `<img src="câu-22.png" alt="Biểu đồ tỉ lệ nứt quả" class="rounded-xl w-full max-w-lg mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: ["A. Không tưới nước.", "B. Tưới 2 ngày một lần.", "C. Tưới 8 ngày một lần.", "D. Tưới 4 ngày một lần."],
+                answer: 1 // B
+            },
+            {
+                id: 23,
+                content: "Kết quả đo 187 mẫu đất trồng hồ tiêu ở một vùng cho thấy pH_KCl dao động từ 3,61 đến 5,33, trung bình 4,10. Dựa vào bảng phân loại trên, các mẫu đất này thuộc những loại nào sau đây?",
+                media: `<div class="table-container overflow-x-auto"><table class="min-w-full">
+                    <thead><tr><th>pH_KCl</th><th>Phân loại đất</th></tr></thead>
+                    <tbody>
+                        <tr><td>< 4,0</td><td>Đất rất chua</td></tr>
+                        <tr><td>4,0 – 5,0</td><td>Đất chua</td></tr>
+                        <tr><td>> 5,0 – 6,0</td><td>Đất chua ít</td></tr>
+                        <tr><td>> 6,0 – 7,0</td><td>Đất trung tính</td></tr>
+                        <tr><td>> 7,0</td><td>Đất kiềm</td></tr>
+                    </tbody>
+                </table></div>`,
+                options: [
+                    "A. Từ đất chua đến đất trung tính.",
+                    "B. Từ đất chua ít đến đất trung tính.",
+                    "C. Từ đất rất chua đến đất chua ít.",
+                    "D. Từ đất chua đến đất kiềm."
+                ],
+                answer: 2 // C
+            },
+            {
+                id: 24,
+                content: "Khi nghiên cứu ảnh hưởng của tỉ lệ phối trộn giá thể đến năng suất mồng tơi trồng chậu, các nhà khoa học trộn đất, trấu hun, phân ủ (phân compost)... Một hộ đã có 1 xô đất và 1 xô trấu hun. Dựa vào biểu đồ kết quả, để giá thể trồng mồng tơi cho năng suất cao nhất, hộ này nên trộn thêm bao nhiêu xô phân ủ?",
+                media: `<img src="cau-24.png" alt="Biểu đồ hình tròn tỉ lệ phối trộn" class="rounded-xl w-full max-w-md mx-auto my-3 border border-pink-200 shadow-sm">`,
+                options: ["A. 1 xô phân ủ.", "B. 3 xô phân ủ.", "C. Không trộn phân ủ.", "D. 2 xô phân ủ."],
+                answer: 1 // B
+            }
+        ];
+
+        // Ngân hàng câu hỏi Đúng/Sai (4 câu)
+        const tfBank = [
+            {
+                id: "TF1",
+                content: "Khẩu Tan Đón là giống lúa nếp cảm quang (khả năng ra hoa phụ thuộc vào độ dài chiếu sáng trong ngày). Khi nghiên cứu ảnh hưởng của thời điểm cấy đến năng suất giống lúa này, các nhà khoa học cấy vào các ngày 01/7, 10/7 và 20/7 ở ba điểm thí nghiệm. Dựa vào kết quả nghiên cứu, xác định tính Đúng/Sai của các phát biểu sau:",
+                media: `<img src="cau-1-ds.png" alt="Biểu đồ năng suất" class="rounded-xl w-full max-w-lg mx-auto my-3 border border-pink-200 shadow-sm">`,
+                questions: [
+                    { id: 'a', text: "a) Khả năng ra hoa của giống lúa Khẩu Tan Đón phụ thuộc vào độ dài chiếu sáng trong ngày.", answer: true },
+                    { id: 'b', text: "b) Theo đặc tính sinh vật học, lúa Khẩu Tan Đón thuộc nhóm cây lâu năm.", answer: false },
+                    { id: 'c', text: "c) Trong các thời điểm cấy thí nghiệm, để lúa Khẩu Tan Đón đạt năng suất thực thu cao nên cấy vào thời điểm cấy chính thay vì cấy muộn hơn 10 ngày.", answer: true },
+                    { id: 'd', text: "d) Cấy sớm vào ngày 01/7 là biện pháp giúp lúa Khẩu Tan Đón đạt năng suất thực thu cao nhất ở cả ba điểm thí nghiệm.", answer: false }
+                ]
+            },
+            {
+                id: "TF2",
+                content: "Khi nghiên cứu ảnh hưởng của liều phân lân nung chảy đến đất trồng dừa nhiễm mặn... Sau 2 năm, pH và EC của đất được ghi nhận ở bảng sau. Xác định tính Đúng/Sai của các phát biểu sau:",
+                media: `<div class="table-container overflow-x-auto"><table class="min-w-full">
+                    <thead><tr><th>Liều lượng phân (kg P₂O₅/ha/năm)</th><th>pH</th><th>EC (mS/cm)</th></tr></thead>
+                    <tbody>
+                        <tr><td>35</td><td>4,26</td><td>4,85</td></tr>
+                        <tr><td>50</td><td>4,50</td><td>4,51</td></tr>
+                        <tr><td>65</td><td>4,88</td><td>4,32</td></tr>
+                        <tr><td>80</td><td>5,45</td><td>4,17</td></tr>
+                    </tbody>
+                </table></div>`,
+                questions: [
+                    { id: 'a', text: "a) Trong thí nghiệm, ion Na⁺ trong đất đẩy ion Ca²⁺ của phân ra khỏi keo đất rồi Ca²⁺ bị rửa trôi.", answer: false },
+                    { id: 'b', text: "b) Liều phân lân nung chảy càng cao thì pH đất sau 2 năm càng cao, do phân chứa CaO.", answer: true },
+                    { id: 'c', text: "c) Khi bón 1 lần/năm, để pH đất thích hợp cho cây dừa nên bón 80 kg P₂O₅/ha/năm.", answer: true },
+                    { id: 'd', text: "d) Sau 2 năm, đất ở các liều từ 50 kg P₂O₅/ha/năm trở lên thuộc loại không mặn.", answer: false }
+                ]
+            },
+            {
+                id: "TF3",
+                content: "Khi phân tích các tầng đất của một vườn bưởi da xanh, các nhà khoa học xác định độ chua bằng hai chỉ số: pH đo trong nước và pH đo trong dung dịch KCl 1 M. Xác định tính Đúng/Sai của các phát biểu sau:",
+                media: `<div class="table-container overflow-x-auto"><table class="min-w-full">
+                    <thead><tr><th>Tầng đất (cm)</th><th>pH (H₂O)</th><th>pH (KCl)</th></tr></thead>
+                    <tbody>
+                        <tr><td>0 – 40</td><td>5,85</td><td>4,55</td></tr>
+                        <tr><td>40 – 70</td><td>4,18</td><td>3,71</td></tr>
+                        <tr><td>70 – 100</td><td>4,71</td><td>4,03</td></tr>
+                        <tr><td>100 – 140</td><td>4,63</td><td>4,13</td></tr>
+                        <tr><td>Trên 140</td><td>3,22</td><td>2,71</td></tr>
+                    </tbody>
+                </table></div>`,
+                questions: [
+                    { id: 'a', text: "a) Độ chua của các tầng đất được biểu thị bằng một chỉ số duy nhất là pH đo trong nước.", answer: false },
+                    { id: 'b', text: "b) Ở mọi tầng, pH đo trong KCl thấp hơn pH đo trong nước do H⁺ bám trên keo đất bị KCl đẩy ra dung dịch.", answer: true },
+                    { id: 'c', text: "c) Trộn đất ở tầng sâu trên 140 cm vào lớp đất mặt là cách làm giúp giảm bớt độ chua của lớp đất trồng bưởi.", answer: false },
+                    { id: 'd', text: "d) Theo pH đo trong KCl, tầng đất từ 0 đến 40 cm thuộc loại đất chua ít.", answer: false }
+                ]
+            },
+            {
+                id: "TF4",
+                content: "Khi nghiên cứu ảnh hưởng của giá thể đến năng suất cải cầu vồng, các nhà khoa học phối trộn xơ dừa với tro trấu hoặc đất sạch theo các công thức (CT). Kết quả như bảng sau. Xác định tính Đúng/Sai của các phát biểu sau:",
+                media: `<div class="table-container overflow-x-auto"><table class="min-w-full">
+                    <thead><tr><th>Công thức</th><th>Năng suất tổng (kg/m²)</th></tr></thead>
+                    <tbody>
+                        <tr><td>CT1 (100% xơ dừa)</td><td>0,218ᵇ</td></tr>
+                        <tr><td>CT2 (75% xơ dừa + 25% tro trấu)</td><td>0,104ᵈ</td></tr>
+                        <tr><td>CT3 (25% xơ dừa + 75% tro trấu)</td><td>0,098ᵈ</td></tr>
+                        <tr><td>CT4 (50% xơ dừa + 50% đất sạch)</td><td>0,211ᵇ</td></tr>
+                        <tr><td>CT5 (25% xơ dừa + 75% đất sạch)</td><td>0,322ᵃ</td></tr>
+                    </tbody>
+                </table></div>`,
+                questions: [
+                    { id: 'a', text: "a) Xơ dừa dùng trong thí nghiệm đã được ủ với chế phẩm vi sinh vật trước khi phối trộn làm giá thể.", answer: true },
+                    { id: 'b', text: "b) Thay 50% xơ dừa bằng đất sạch làm năng suất cải cầu vồng cao hơn so với trồng trên giá thể 100% xơ dừa.", answer: false },
+                    { id: 'c', text: "c) Tăng tỉ lệ tro trấu trong giá thể từ 25% lên 75% là cách làm giúp tăng năng suất cải cầu vồng.", answer: false },
+                    { id: 'd', text: "d) Trong các công thức thí nghiệm, để cải cầu vồng đạt năng suất cao nhất nên trồng trên giá thể 25% xơ dừa + 75% đất sạch.", answer: true }
+                ]
+            }
+        ];
+
+        let currentMCQs = [];
+        let currentTFs = [];
+        let userAnswersMCQ = {};
+        let userAnswersTF = {}; // Định dạng: { "TF1-a": true/false, ... }
+        let isSubmitted = false;
+
+        // Hàm xáo trộn mảng
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        // Chọn ngẫu nhiên 12 câu MCQ
+        function selectQuestions() {
+            let shuffledMCQ = shuffleArray([...mcqBank]);
+            currentMCQs = shuffledMCQ.slice(0, 12);
+            
+            // Lấy 4 câu TF và có thể đảo vị trí
+            currentTFs = shuffleArray([...tfBank]);
+        }
+
+        function renderQuiz() {
+            const mcqSection = document.getElementById('mcq-section');
+            const tfSection = document.getElementById('tf-section');
+            
+            // Xóa nội dung cũ
+            mcqSection.innerHTML = '';
+            tfSection.innerHTML = '';
+
+            // Render 12 câu MCQ
+            currentMCQs.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card bg-white p-5 sm:p-6 rounded-2xl border border-pink-100 shadow-sm';
+                card.id = `mcq-card-${index}`;
+                
+                let mediaHtml = q.media ? q.media : '';
+                
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label class="block cursor-pointer relative">
+                            <input type="radio" name="mcq-${index}" value="${optIndex}" class="peer sr-only" onchange="saveMCQAnswer(${index}, ${optIndex})" ${isSubmitted ? 'disabled' : ''}>
+                            <div class="option-label p-3 rounded-xl border border-gray-200 bg-gray-50 peer-hover:border-pink-300 text-gray-700 text-sm sm:text-base">
+                                ${opt}
+                            </div>
+                        </label>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h3 class="font-bold text-gray-800 mb-2">Câu ${index + 1}: <span class="font-normal">${q.content}</span></h3>
+                    ${mediaHtml}
+                    <div class="space-y-2 mt-4">
+                        ${optionsHtml}
+                    </div>
+                    <div id="mcq-feedback-${index}" class="mt-3 text-sm font-semibold hidden"></div>
+                `;
+                mcqSection.appendChild(card);
+            });
+
+            // Render 4 câu TF
+            currentTFs.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card bg-white p-5 sm:p-6 rounded-2xl border border-pink-100 shadow-sm';
+                card.id = `tf-card-${index}`;
+                
+                let mediaHtml = q.media ? q.media : '';
+                let subQsHtml = '';
+
+                q.questions.forEach((subQ) => {
+                    const ansId = `${q.id}-${subQ.id}`;
+                    subQsHtml += `
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 py-3 border-b border-pink-50 last:border-0">
+                            <span class="text-sm sm:text-base text-gray-700 flex-1">${subQ.text}</span>
+                            <div class="flex gap-2 w-full sm:w-auto shrink-0 justify-end">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="${ansId}" value="true" class="peer sr-only" onchange="saveTFAnswer('${ansId}', true)" ${isSubmitted ? 'disabled' : ''}>
+                                    <div class="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600 peer-checked:bg-green-100 peer-checked:border-green-400 peer-checked:text-green-700 font-medium transition-colors text-center w-16">
+                                        Đúng
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="${ansId}" value="false" class="peer sr-only" onchange="saveTFAnswer('${ansId}', false)" ${isSubmitted ? 'disabled' : ''}>
+                                    <div class="px-4 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600 peer-checked:bg-red-100 peer-checked:border-red-400 peer-checked:text-red-700 font-medium transition-colors text-center w-16">
+                                        Sai
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="tf-feedback-${ansId}" class="w-6 h-6 ml-2 hidden items-center justify-center"></div>
+                        </div>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h3 class="font-bold text-gray-800 mb-2">Câu ${index + 1} (Đ/S): <span class="font-normal">${q.content}</span></h3>
+                    ${mediaHtml}
+                    <div class="mt-4 border border-pink-100 rounded-xl px-4 py-2 bg-pink-50/30">
+                        ${subQsHtml}
+                    </div>
+                `;
+                tfSection.appendChild(card);
+            });
+        }
+
+        function saveMCQAnswer(qIndex, optIndex) {
+            userAnswersMCQ[qIndex] = optIndex;
+        }
+
+        function saveTFAnswer(ansId, value) {
+            userAnswersTF[ansId] = value;
+        }
+
+        function submitQuiz() {
+            if (isSubmitted) return;
+
+            // Kiểm tra thông tin học sinh
+            const name = document.getElementById('studentName').value.trim();
+            if (!name) {
+                alert("Vui lòng nhập họ và tên trước khi nộp bài!");
+                return;
+            }
+
+            isSubmitted = true;
+            let totalPoints = 0;
+            const maxPoints = 10;
+            
+            // Tính điểm:
+            // Phần 1: 12 câu trắc nghiệm (Mỗi câu 0.25 điểm => Tổng 3 điểm)
+            // Phần 2: 4 câu đúng sai, mỗi câu 4 ý (Tổng 16 ý). Theo quy chuẩn mới, mỗi ý đúng tương ứng tỉ lệ điểm, nhưng ở đây ta làm đơn giản: mỗi ý đúng 0.4375 đ để tổng là 7đ?
+            // Cách tính chuẩn kỳ thi 2025: 
+            // MCQ: 12 câu * 0.25 = 3.0 điểm.
+            // Đ/S: 4 câu, mỗi câu 1 điểm (chọn đúng 1 ý: 0.1đ, 2 ý: 0.25đ, 3 ý: 0.5đ, 4 ý: 1.0đ) => Max 4.0 điểm.
+            // Vậy tổng = 7.0 điểm? Để quy về thang 10, ta quy đổi theo phần trăm tổng số điểm đạt được / tổng điểm tối đa.
+            
+            let mcqScoreRaw = 0; // max 12
+            let tfScoreRaw = 0;  // max 4 điểm chuẩn
+            
+            // Check MCQs
+            currentMCQs.forEach((q, index) => {
+                const feedbackEl = document.getElementById(`mcq-feedback-${index}`);
+                feedbackEl.classList.remove('hidden');
+                
+                if (userAnswersMCQ[index] === q.answer) {
+                    mcqScoreRaw += 1;
+                    feedbackEl.innerHTML = `✅ Chính xác! Đáp án đúng là: ${q.options[q.answer]}`;
+                    feedbackEl.className = 'mt-3 text-sm font-semibold text-green-600 block';
+                    document.getElementById(`mcq-card-${index}`).classList.add('border-green-300', 'bg-green-50');
+                } else {
+                    let userText = userAnswersMCQ[index] !== undefined ? q.options[userAnswersMCQ[index]] : "Chưa chọn";
+                    feedbackEl.innerHTML = `❌ Sai. Bạn chọn: ${userText} <br>✅ Đáp án đúng là: ${q.options[q.answer]}`;
+                    feedbackEl.className = 'mt-3 text-sm font-semibold text-red-600 block';
+                    document.getElementById(`mcq-card-${index}`).classList.add('border-red-300', 'bg-red-50');
+                }
+            });
+
+            // Check TFs
+            currentTFs.forEach((q, index) => {
+                let correctCountInQ = 0;
+                
+                q.questions.forEach(subQ => {
+                    const ansId = `${q.id}-${subQ.id}`;
+                    const feedbackEl = document.getElementById(`tf-feedback-${ansId}`);
+                    feedbackEl.classList.remove('hidden');
+                    feedbackEl.classList.add('flex');
+                    
+                    if (userAnswersTF[ansId] === subQ.answer) {
+                        correctCountInQ += 1;
+                        feedbackEl.innerHTML = `<span class="text-green-500 font-bold text-lg">✓</span>`;
+                    } else {
+                        feedbackEl.innerHTML = `<span class="text-red-500 font-bold text-lg">✗</span>`;
+                    }
+                });
+
+                // Tính điểm câu TF theo chuẩn: 1 ý=0.1, 2 ý=0.25, 3 ý=0.5, 4 ý=1.0
+                if (correctCountInQ === 1) tfScoreRaw += 0.1;
+                else if (correctCountInQ === 2) tfScoreRaw += 0.25;
+                else if (correctCountInQ === 3) tfScoreRaw += 0.5;
+                else if (correctCountInQ === 4) tfScoreRaw += 1.0;
+            });
+
+            // Tổng điểm nguyên bản = mcqScoreRaw * 0.25 + tfScoreRaw
+            // Thang điểm max nguyên bản = 3 + 4 = 7 điểm.
+            // Quy đổi sang thang 10: (Điểm đạt / 7) * 10
+            let rawTotal = (mcqScoreRaw * 0.25) + tfScoreRaw;
+            totalPoints = (rawTotal / 7) * 10;
+            totalPoints = Math.round(totalPoints * 100) / 100; // Làm tròn 2 chữ số
+
+            // Hiển thị điểm
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreValue = document.getElementById('score-value');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            scoreValue.innerText = `${totalPoints}/10`;
+            scoreDisplay.classList.remove('hidden');
+            scoreDisplay.classList.add('animate-pulse'); // Hiệu ứng nhỏ
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Cuộn lên đầu xem điểm
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            isSubmitted = false;
+            userAnswersMCQ = {};
+            userAnswersTF = {};
+            
+            // Ẩn bảng điểm
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.classList.add('hidden');
+            
+            // Bật lại nút Nộp bài
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            // Tạo đề mới và Render
+            selectQuestions();
+            renderQuiz();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Chạy ngay khi tải trang
+        window.onload = function() {
+            resetQuiz();
+        };
+    </script>
+</body>
+</html>
